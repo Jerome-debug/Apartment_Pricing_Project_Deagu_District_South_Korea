@@ -1,0 +1,223 @@
+---
+title: "Group3_Project"
+author: "Bundi Kirimi"
+date: "2/7/2022"
+output: html_document
+---
+
+
+
+
+
+```{r}
+#Loading the data
+path <-"C:/Users/Jerome/Downloads/Daegu_Real_Estate_data.csv" 
+
+df<-read.csv(path, sep = ",")
+
+head(df)
+```
+
+
+#Previewing the summary of the dataset
+```{r}
+summary(df)
+```
+
+#Checking the data
+```{r}
+#Length
+length(df)
+```
+The dataframe has 16 columns
+
+
+````{r}
+#Dimensions
+dim(df)
+
+````
+
+
+
+
+#The dataframe has 12330 row entries and 18 columns
+Column Names
+```{r}
+colnames(df)
+
+```
+
+Column data types
+
+```{r}
+sapply(df, class)
+```
+
+
+
+
+#Data Cleaning
+
+```{r}
+
+any(is.na(df))
+```
+
+```{r}
+#Duplicates
+duplicated_rows <- df[duplicated(df),]
+
+dim(duplicated_rows)
+
+```
+Removing duplicates
+```{r}
+df1 <- df[-which(duplicated(df)), ]
+dim(df1)
+```
+
+#Data Types
+```{r}
+
+sapply(df1, class)
+```
+
+```{r}
+summary(df1)
+```
+
+median is 212,389..This will be the nedium priced house
+32,743 will be the least price
+585,840 the most expensive house
+
+#Univariate Analysis
+
+```{r}
+factor(unique(df1$SalePrice))
+
+
+````
+
+```{r}
+unique(df1$HallwayType)
+
+factor(unique(df1$HallwayType))
+
+```
+
+
+```{r}
+unique(df1$HeatingType)
+
+factor(unique(df1$HeatingType))
+```
+
+```{r}
+unique(df1$AptManageType)
+
+factor(unique(df1$AptManageType))
+```
+
+
+```{r}
+unique(df1$HallwayType)
+factor(unique(df1$HallwayType))
+````
+
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df$YrSold , col=c("darkorange"))
+````
+
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$SalePrice , col=c("darkorange"))
+
+
+`````
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$YearBuilt , col=c("darkorange"))
+````
+
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$YrSold , col=c("darkorange"))
+````
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$MonthSold , col=c("darkorange"))
+````
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$Size.sqf. , col=c("darkorange"))
+````
+
+```{r}
+#HallwayTypecorridor                   HallwayTypemixed                HallwayTypeterraced
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$Floor , col=c("darkorange"))
+````
+
+
+
+
+
+
+
+
+
+
+
+facto
+Performing one hot encoding
+
+```{r}
+# One hot encoding of the factor variables.
+library(caret)
+## Loading required package: lattice
+dmy <- dummyVars(" ~ .", data = df1)
+dummy_df <- data.frame(predict(dmy, newdata = df1))
+
+#print(dummy_df)
+head(dummy_df)
+
+```
+
+Checking the datatypes
+
+```{r}
+sapply(dummy_df, class)
+
+```
+
+
+
+
+
+
+
+Regression
+
+
+
+
