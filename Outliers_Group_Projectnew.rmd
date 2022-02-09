@@ -1,0 +1,613 @@
+---
+title: "Group3_Project"
+author: "Bundi Kirimi"
+date: "2/7/2022"
+output: html_document
+---
+
+
+1.  Defining the Question
+
+<!-- -->
+
+a)  Specifying the Data Analytic Question
+
+ find out the factors that influence pricing of apartments
+
+b)  Defining the Metric for Success 
+    This project will be successful when our model reaches an Accuracy of between 75-95%
+
+c)  Understanding the context
+The dataset was acquired fro  the Deagu District in Korea.It outlines the various factors that influence the price of an Apartment.
+
+d)Recording the Experimental Design
+    Loading Libraries
+    Reading the dataset
+    Data Cleaning
+    Exploratory Data Anlysis
+    Feature Engineering
+    Model Training
+    Model Evaluation
+    Conclusion
+    Recommendations
+
+e)  Data Relevance
+
+<!-- -->
+
+2.  Reading the Data
+
+#Loading the libraries
+````{r}
+#specify the path where the file is located
+library("data.table")
+library(tidyverse)
+library(magrittr)
+library(warn = -1)
+library("ggbiplot")
+library(ggplot2)
+library(lattice)
+library(corrplot)
+library(DataExplorer)
+library(pastecs)
+library(psych)
+library(factoextra)
+library(caret)
+
+````
+
+
+#Loading the data
+```{r}
+#Loading the data
+path <-"C:/Users/Jerome/Downloads/Daegu_Real_Estate_data.csv" 
+
+df<-read.csv(path, sep = ",")
+
+head(df)
+```
+
+
+#Previewing the summary of the dataset
+```{r}
+summary(df)
+```
+The mean of Sale Price of an apartment in Deagu is 221218 whereas the median is 207964.
+This suggests that the data is right_skewed/Positvely_skewed.
+
+3)Checking the data
+```{r}
+#Length
+length(df)
+```
+The dataframe has 30 columns
+
+````{r}
+#Dimensions
+dim(df)
+
+````
+
+#The dataframe has 5891 row entries and 30 columns
+
+Column Names
+```{r}
+colnames(df)
+
+```
+
+Column data types
+
+```{r}
+sapply(df, class)
+```
+
+
+Our data has numerical,categorical and character variables
+
+4)Data Cleaning
+
+```{r}
+sum(is.na(df))
+
+```
+There are no Null Values
+
+
+
+Checking for Dupicates
+```{r}
+#Duplicates
+duplicated_rows <- df[duplicated(df),]
+
+dim(duplicated_rows)
+
+```
+We found 316 rows weere duplicated
+
+
+Removing duplicates
+```{r}
+df1 <- df[-which(duplicated(df)), ]
+dim(df1)
+```
+Our data has 5575 rows and 30 columns after removing the duplicates
+
+
+#Data Types
+```{r}
+
+sapply(df1, class)
+```
+
+```{r}
+summary(df1)
+```
+
+
+
+#Univariate Analysis
+Checking the categorical variables
+```{r}
+#Visualizing the Hallway types
+unique(df1$HallwayType)
+
+factor(unique(df1$HallwayType))
+
+```
+
+
+```{r}
+#Visualizing the Heating type
+unique(df1$HeatingType)
+
+factor(unique(df1$HeatingType))
+```
+
+```{r}
+#Visualizing the Apartment Type
+unique(df1$AptManageType)
+
+factor(unique(df1$AptManageType))
+```
+
+
+
+```{r}
+#Visualizing the Hallway types
+
+library(ggplot2)
+ggplot(df1, aes(HallwayType)) + 
+   geom_bar(fill = "red")
+```
+
+We can see most apartments have terraced Hallway types.
+
+```{r}
+#Visualizing the Apartment Management types
+
+library(ggplot2)
+ggplot(df1, aes(AptManageType)) + 
+   geom_bar(fill = "Orange")
+```
+
+Most Apartments had  Management System  by trust while very few had self management
+
+
+```{r}
+#Visualizing the heating systems
+
+library(ggplot2)
+ggplot(df1, aes(HeatingType)) + 
+   geom_bar(fill = "Blue")
+```
+Most Apartments had Individual Heating System while very few had central heating sytsems
+
+```{r}
+#
+#each of the values printed below appear thrice in the dataset
+#distribution
+hist(df1$SalePrice , col=c("darkorange"))
+
+
+```
+We can witness a normal Distribution
+
+```{r}
+head(df1)
+```
+```{r}
+summary(df1)
+```
+
+
+
+
+The data is skewed to the right.
+Most houses in the dataset were newly built
+
+
+```{r}
+#Histogram of size in squarefoot
+hist(df1$Size.sqf. , col=c("darkorange"))
+```
+We can witness a normal distribution
+
+
+
+```{r}
+#Histogram of floor column
+#distribution
+hist(df1$Floor , col=c("darkorange"))
+```
+The data is skewed to the right.
+Thus suggests that there is very minimal buildings with so many floors compared to the ones with few floors
+
+
+```{r}
+summary(df1)
+```
+
+
+```{r}
+df1$Age <- df1$YrSold - df1$YearBuilt
+df1
+
+```
+
+
+```{r}
+
+
+data <- df1[ c(1,5,6,7,8,9,10,11,14,15,16,18,19,20,21,22,23,28,29,30,31) ]
+
+head(data)
+```
+
+
+
+
+
+Bivariate Analysis
+```{r}
+head(df1)
+```
+Sale Price Vs Size in Square foot of the house
+```{r}
+#Sale Price Vs Size in Square foot of the house
+ggplot(df1, aes(x = Floor, y = SalePrice)) +
+  geom_point() +
+  stat_smooth(method = 'lm')
+```
+It is likely the higher the Apartment in terms of floor 
+the more price of the Apartment
+
+```{r}
+ggplot(df1, aes(x = AptManageType, y = SalePrice)) +
+  geom_boxplot() 
+```
+The Apartments managed by Trust are more expensive to Apartments managed by Individuals.
+
+
+```{r}
+
+ggplot(df1, aes(x = Age, y = SalePrice)) +
+  geom_point() +
+  stat_smooth(method = 'lm')
+
+```
+As an Apartment Ages,the price Reduces
+
+```{r}
+
+              
+    #create scatterplot of hours studied vs. exam score
+plot(df1$Size.sqf., df1$SalePrice, pch=16, col='black',
+     main='Size.sqf vs  SalePrice',
+     xlab='Size.sqf', ylab='SalePrice ')
+
+
+```
+The Price of an Apartment increases with increase in Size of the Apartment
+
+
+```{r}
+#create scatterplot of hours studied vs. exam score
+plot(df1$SalePrice, df1$N_SchoolNearBy.Total.
+, pch=16, col='steelblue',
+     main='SalePrice N_FacilitiesNearBy.Total.t',
+     xlab='SalePrice', ylab='N_FacilitiesNearBy.Total. ')
+```
+
+
+There is no direct relationship between the two variables
+
+
+
+
+```{r}
+head(df1)
+```
+
+
+Feature engineering
+
+```{r}
+
+#select list of categorical variables,df1
+df2 <- df1[,c(7,8,9,12,13,17)]#categorical
+#make a subset of non-categorical variables,df2
+data <-df1[,c(1,5,6,10,11,14,15,23,29,30)]
+```
+
+
+```{r}
+head(data)
+```
+
+
+Dummy Encoding
+
+```{r}
+dmy <- dummyVars(" ~ .", data = df2, fullRank = T)
+df3 <- data.frame(predict(dmy, newdata = df2))
+```
+
+````{r}
+head(df3)
+```
+
+````{r}
+db <- cbind(df3,data)
+```
+
+```{r}
+head(db)
+```
+
+
+
+Correlation
+
+```{r}
+# Calculating the correlation matrix
+# ---
+#
+correlationMatrix <- cor(db)
+# Find attributes that are highly correlated
+# ---
+#
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+# Highly correlated attributes
+# ---
+# 
+highlyCorrelated
+names(db[,highlyCorrelated])
+```
+There are 11 correlated variables.
+
+
+Performing Scaling
+
+```{r}
+#dummy_df2_scaled <- scale(db)
+#summary(dummy_df2_scaled)
+```
+Performing Normalization
+```{r}
+dummy_df2_norm <- as.data.frame(apply(db, 2, function(x) (x -
+min(x))/(max(x)-min(x))))
+summary(dummy_df2_norm)
+```
+
+```{r}
+# Calculating the correlation matrix
+# ---
+#
+correlationMatrix <- cor(dummy_df2_norm)
+# Find attributes that are highly correlated
+# ---
+#
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+# Highly correlated attributes
+# ---
+# 
+highlyCorrelated
+names(dummy_df2_norm[,highlyCorrelated])
+```
+
+```{r}
+#Duplicates
+duplicated_rows <- dummy_df2_norm[duplicated(dummy_df2_norm),]
+
+dim(duplicated_rows)
+
+```
+Removing duplicates
+```{r}
+df3 <- df[-which(duplicated(dummy_df2_norm)), ]
+dim(df3)
+```
+
+
+
+
+```{r,fig.width=10,fig.height=10}
+# Plotting the Correlation Heatmap
+library(ggcorrplot)
+ggcorrplot(cor(dummy_df2_norm), hc.order = F,type = 
+"upper", lab = T ,
+  ggtheme = ggplot2::theme_gray,
+  colors = c("#00798c", "white", "#edae49"),
+  tl.srt = 90)
+```
+
+
+
+
+##creating train test sets
+```{r}
+set.seed(387)
+train_data = createDataPartition(y = data$SalePrice, p = 0.70, list = FALSE)
+test_data =createDataPartition(y=data$SalePrice, p=0.30,list=FALSE)
+train = data[train_data, ]
+test = data[test_data, ]
+```
+
+
+#model building
+#linear regression
+```{r}
+model = lm( SalePrice ~., data = train)
+```
+
+##summary of the model
+```{r}
+summary(model) # Obtain coefficients, Residuals and statistics
+rsquare = summary(model)$r.squared # R-squared value
+```
+##predictions
+````{r}
+predictions = predict(model, newdata = test)
+predicted.vs.original = data.frame(predicted = predictions, original = test$SalePrice)   # Create a new data frame
+ggplot(predicted.vs.original, aes(x = predicted, y = original)) +
+ geom_point() +
+ geom_smooth(color='blue') +
+ labs(x = 'Predicted Values', y = 'Original Values', title = 'Predicted vs. Original Values') +
+ theme_minimal()
+````
+
+
+````{r}
+#install.packages('xgboost')
+library(xgboost)
+
+library(caret)
+set.seed(1234)
+
+cvcontrol <- trainControl(method = "repeatedcv",
+                          number = 5,
+                          repeats = 2,
+                          allowParallel = TRUE)
+set.seed(1978)
+boosting1<- train(SalePrice ~., data = test,
+                  method = "xgbTree",
+                  trControl = cvcontrol,
+                  tuneGrid = expand.grid(nrounds = 720,
+                                         max_depth = 7,
+                                         eta = 0.25,
+                                         gamma = 2.2,
+                                         colsample_bytree =1,
+                                         min_child_weight = 1,
+                                         subsample = 1))
+
+`````
+
+
+
+
+```{r}
+summary((boosting1))
+```
+```{r}
+bstSparse <- xgboost(data=as.matrix(train), label = train$SalePrice, max.depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "reg:squarederror")
+
+```
+
+
+
+
+
+```{r}
+pred <- predict(bstSparse, newdata=as.matrix(test))
+
+# size of the prediction vector
+print(length(pred))
+## [1] 1611
+
+# limit display of predictions to the first few
+print(head(pred))
+```
+K-MEANS CLUSTERING
+
+
+```{r}
+outputk <- kmeans(data, 4)
+```
+
+```{r}
+outputk$size
+
+outputk$centers
+
+```
+Determining Number of clusters using Elbow Mmethod
+```{r}
+
+library(factoextra)
+# Elbow method
+fviz_nbclust(data, kmeans, method = "wss") +
+    geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
+```
+
+
+Visualising the clusters
+
+```{r}
+library(factoextra)
+options(repr.plot.width = 11, repr.plot.height = 10)
+fviz_cluster(outputk, data)
+```
+
+
+HIERACHICAL CLUSTERING
+```{r}
+
+d <- dist(data, method = "euclidean")
+# We then apply hierarchical clustering using the Ward's method
+res.hc <- hclust(d, method = "ward.D2")
+# Lastly we plot the obtained dendrogram
+#--
+plot(res.hc, cex = 0.6, hang = -1)
+
+```
+
+
+
+```{r}
+head(data)
+```
+
+#Polynomial regression
+```{r}
+ poly_reg = lm(formula = SalePrice ~ .,data = train)
+```
+
+```{r}
+#summary(poly_reg)
+summary(poly_reg)$r.squared
+```
+
+```{r}
+
+predict = predict(poly_reg, newdata = test)
+predicted.vs.original = data.frame(predicted = predict, original = test$SalePrice)   # Create a new data frame
+ggplot(predicted.vs.original, aes(x = predicted, y = original)) +
+ geom_point() +
+ geom_smooth(color='blue') +
+ labs(x = 'Predicted Values', y = 'Original Values', title = 'Predicted vs. Original Values') +
+ theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
