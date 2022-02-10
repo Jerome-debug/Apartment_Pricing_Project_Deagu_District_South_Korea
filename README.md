@@ -40,9 +40,13 @@ Resources
 Personnel
 The project was handled by a team of 5 Data Science Students:
 Peter Kirimi
+
 Rachel Juma
+
 David Kiplang’at
+
 Farnadis Kanja
+
 Ted Kimani 
 
 Datasets
